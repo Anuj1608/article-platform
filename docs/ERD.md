@@ -16,6 +16,7 @@ erDiagram
         BIGSERIAL id PK
         VARCHAR(500) title "NOT NULL"
         TEXT body "NOT NULL"
+        VARCHAR(500) cover_image_url "NULLABLE"
         BIGINT author_id FK "NOT NULL → users(id)"
         TIMESTAMPTZ created_at "NOT NULL DEFAULT NOW()"
     }
@@ -29,10 +30,12 @@ erDiagram
         TIMESTAMPTZ created_at "NOT NULL DEFAULT NOW()"
     }
 
-    likes {
+    reactions {
         BIGSERIAL id PK
         BIGINT user_id FK "NOT NULL → users(id)"
-        BIGINT article_id FK "NOT NULL → articles(id)"
+        VARCHAR(10) target_type "NOT NULL CHECK IN ('ARTICLE','COMMENT')"
+        BIGINT target_id "NOT NULL — FK by convention to articles.id or comments.id"
+        VARCHAR(10) reaction_type "NOT NULL CHECK IN ('LIKE','DISLIKE')"
         TIMESTAMPTZ created_at "NOT NULL DEFAULT NOW()"
     }
 
@@ -47,11 +50,12 @@ erDiagram
 
     users ||--o{ articles : "authors"
     users ||--o{ comments : "writes"
-    users ||--o{ likes : "places"
+    users ||--o{ reactions : "places"
     users ||--o{ tags : "is tagged in"
     users ||--o{ tags : "creates tags"
     articles ||--o{ comments : "receives"
-    articles ||--o{ likes : "receives"
+    articles ||--o{ reactions : "receives"
+    comments ||--o{ reactions : "receives"
     comments ||--o{ comments : "parent of (replies)"
 ```
 
@@ -61,10 +65,11 @@ erDiagram
 |---|---|---|
 | users → articles | one-to-many | DELETE CASCADE |
 | users → comments | one-to-many | DELETE CASCADE |
-| users → likes | one-to-many | DELETE CASCADE |
+| users → reactions | one-to-many | DELETE CASCADE |
 | articles → comments | one-to-many | DELETE CASCADE |
-| articles → likes | one-to-many | DELETE CASCADE |
-| comments → comments | self-referential (replies) | DELETE CASCADE (nullifies children if parent deleted) |
+| articles → reactions | one-to-many (via target_type='ARTICLE') | DELETE CASCADE |
+| comments → reactions | one-to-many (via target_type='COMMENT') | DELETE CASCADE |
+| comments → comments | self-referential (replies) | DELETE CASCADE |
 | tags.tagged_user_id → users | many-to-one | DELETE CASCADE |
 | tags.created_by → users | many-to-one | DELETE CASCADE |
 
@@ -72,11 +77,20 @@ erDiagram
 
 - `users.username` — one account per username
 - `users.email` — one account per email address
-- `likes(user_id, article_id)` — prevents duplicate likes at the database level
+- `reactions(user_id, target_type, target_id)` — one reaction per user per target, prevents duplicate likes/dislikes at the database level
+
+## Polymorphic Pattern (reactions table)
+
+The `reactions` table uses a discriminator column pattern:
+- `target_type IN ('ARTICLE', 'COMMENT')` identifies which entity the reaction belongs to
+- `target_id` is the primary key of that entity
+- `reaction_type IN ('LIKE', 'DISLIKE')` captures the reaction kind
+- This single table handles reactions on both articles and comments, avoiding table proliferation
+- The unique constraint on `(user_id, target_type, target_id)` ensures each user has at most one reaction per target
 
 ## Polymorphic Pattern (tags table)
 
-The `tags` table uses a discriminator column pattern:
+The `tags` table uses the same discriminator column pattern:
 - `source_type IN ('ARTICLE', 'COMMENT')` identifies which entity the tag belongs to
 - `source_id` is the primary key of that entity
 - This avoids two separate tag tables while keeping the schema flexible

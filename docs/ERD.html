@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Article Publishing Platform — ERD</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 28px 40px;
+    }
+    header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { font-size: 0.875rem; color: #94a3b8; margin-top: 4px; }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .diagram-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      text-align: left;
+    }
+
+    /* ── Reference tables ── */
+    .tables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .table-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .table-header {
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-header.users    { background: #dbeafe; color: #1d4ed8; }
+    .table-header.articles { background: #dcfce7; color: #15803d; }
+    .table-header.comments { background: #fef9c3; color: #a16207; }
+    .table-header.reactions{ background: #fce7f3; color: #be185d; }
+    .table-header.tags     { background: #ede9fe; color: #7c3aed; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th {
+      background: #f8fafc;
+      padding: 8px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    td {
+      padding: 8px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 4px;
+    }
+    .badge-pk  { background: #fef3c7; color: #92400e; }
+    .badge-fk  { background: #dbeafe; color: #1e40af; }
+    .badge-uk  { background: #d1fae5; color: #065f46; }
+    .badge-null{ background: #f1f5f9; color: #64748b; }
+
+    .col-name { font-family: 'Courier New', monospace; font-weight: 600; color: #0f172a; }
+    .col-type { font-family: 'Courier New', monospace; color: #6366f1; font-size: 0.75rem; }
+    .col-note { color: #64748b; font-size: 0.75rem; }
+
+    /* ── Relationships ── */
+    .rel-table {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .rel-table table { font-size: 0.82rem; }
+    .rel-table th { background: #f8fafc; }
+
+    .cardinality { font-family: monospace; font-weight: 700; color: #7c3aed; }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: #94a3b8;
+      font-size: 0.78rem;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Article Publishing Platform — Entity Relationship Diagram</h1>
+  <p>PostgreSQL 15 · Final schema after all Flyway migrations (V1–V5)</p>
+</header>
+
+<main>
+
+  <!-- ── Mermaid Visual ERD ── -->
+  <h2 class="section-title" style="margin-bottom:16px;">Visual ERD</h2>
+  <div class="diagram-card">
+    <div class="mermaid">
+erDiagram
+    users {
+        BIGSERIAL id PK
+        VARCHAR_50 username UK
+        VARCHAR_255 email UK
+        VARCHAR_255 password_hash
+        TIMESTAMPTZ created_at
+    }
+
+    articles {
+        BIGSERIAL id PK
+        VARCHAR_500 title
+        TEXT body
+        VARCHAR_500 cover_image_url
+        BIGINT author_id FK
+        TIMESTAMPTZ created_at
+    }
+
+    comments {
+        BIGSERIAL id PK
+        TEXT body
+        BIGINT article_id FK
+        BIGINT author_id FK
+        BIGINT parent_comment_id FK
+        TIMESTAMPTZ created_at
+    }
+
+    reactions {
+        BIGSERIAL id PK
+        BIGINT user_id FK
+        VARCHAR_10 target_type
+        BIGINT target_id
+        VARCHAR_10 reaction_type
+        TIMESTAMPTZ created_at
+    }
+
+    tags {
+        BIGSERIAL id PK
+        BIGINT tagged_user_id FK
+        VARCHAR_10 source_type
+        BIGINT source_id
+        BIGINT created_by FK
+        TIMESTAMPTZ created_at
+    }
+
+    users ||--o{ articles    : "authors"
+    users ||--o{ comments    : "writes"
+    users ||--o{ reactions   : "places"
+    users ||--o{ tags        : "is tagged in"
+    users ||--o{ tags        : "creates"
+    articles ||--o{ comments : "has"
+    articles ||--o{ reactions: "receives"
+    comments ||--o{ reactions: "receives"
+    comments ||--o{ comments : "replies to"
+    </div>
+  </div>
+
+  <!-- ── Table Reference ── -->
+  <h2 class="section-title">Table Reference</h2>
+  <div class="tables-grid">
+
+    <!-- users -->
+    <div class="table-card">
+      <div class="table-header users">&#128100; users</div>
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">id</td><td class="col-type">BIGSERIAL</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Auto-increment</td></tr>
+          <tr><td class="col-name">username</td><td class="col-type">VARCHAR(50)</td><td><span class="badge badge-uk">UK</span></td><td class="col-note">NOT NULL</td></tr>
+          <tr><td class="col-name">email</td><td class="col-type">VARCHAR(255)</td><td><span class="badge badge-uk">UK</span></td><td class="col-note">NOT NULL</td></tr>
+          <tr><td class="col-name">password_hash</td><td class="col-type">VARCHAR(255)</td><td></td><td class="col-note">BCrypt, NOT NULL</td></tr>
+          <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-note">DEFAULT NOW()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- articles -->
+    <div class="table-card">
+      <div class="table-header articles">&#128196; articles</div>
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">id</td><td class="col-type">BIGSERIAL</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Auto-increment</td></tr>
+          <tr><td class="col-name">title</td><td class="col-type">VARCHAR(500)</td><td></td><td class="col-note">NOT NULL</td></tr>
+          <tr><td class="col-name">body</td><td class="col-type">TEXT</td><td></td><td class="col-note">NOT NULL</td></tr>
+          <tr><td class="col-name">cover_image_url</td><td class="col-type">VARCHAR(500)</td><td></td><td class="col-note"><span class="badge badge-null">NULL</span>Optional hero image</td></tr>
+          <tr><td class="col-name">author_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ users(id) CASCADE</td></tr>
+          <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-note">DEFAULT NOW()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- comments -->
+    <div class="table-card">
+      <div class="table-header comments">&#128172; comments</div>
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">id</td><td class="col-type">BIGSERIAL</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Auto-increment</td></tr>
+          <tr><td class="col-name">body</td><td class="col-type">TEXT</td><td></td><td class="col-note">NOT NULL</td></tr>
+          <tr><td class="col-name">article_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ articles(id) CASCADE</td></tr>
+          <tr><td class="col-name">author_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ users(id) CASCADE</td></tr>
+          <tr><td class="col-name">parent_comment_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note"><span class="badge badge-null">NULL</span>→ comments(id), self-join for replies</td></tr>
+          <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-note">DEFAULT NOW()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- reactions -->
+    <div class="table-card">
+      <div class="table-header reactions">&#128077; reactions</div>
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">id</td><td class="col-type">BIGSERIAL</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Auto-increment</td></tr>
+          <tr><td class="col-name">user_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ users(id) CASCADE</td></tr>
+          <tr><td class="col-name">target_type</td><td class="col-type">VARCHAR(10)</td><td></td><td class="col-note">CHECK IN ('ARTICLE','COMMENT')</td></tr>
+          <tr><td class="col-name">target_id</td><td class="col-type">BIGINT</td><td></td><td class="col-note">PK of the target entity</td></tr>
+          <tr><td class="col-name">reaction_type</td><td class="col-type">VARCHAR(10)</td><td></td><td class="col-note">CHECK IN ('LIKE','DISLIKE')</td></tr>
+          <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-note">DEFAULT NOW()</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:8px 14px;background:#fdf4ff;font-size:0.72rem;color:#7c3aed;border-top:1px solid #e2e8f0;">
+        UNIQUE (user_id, target_type, target_id) — one reaction per user per target
+      </div>
+    </div>
+
+    <!-- tags -->
+    <div class="table-card">
+      <div class="table-header tags">&#64; tags</div>
+      <table>
+        <thead><tr><th>Column</th><th>Type</th><th>Key</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">id</td><td class="col-type">BIGSERIAL</td><td><span class="badge badge-pk">PK</span></td><td class="col-note">Auto-increment</td></tr>
+          <tr><td class="col-name">tagged_user_id</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ users(id) CASCADE</td></tr>
+          <tr><td class="col-name">source_type</td><td class="col-type">VARCHAR(10)</td><td></td><td class="col-note">CHECK IN ('ARTICLE','COMMENT')</td></tr>
+          <tr><td class="col-name">source_id</td><td class="col-type">BIGINT</td><td></td><td class="col-note">PK of the source entity</td></tr>
+          <tr><td class="col-name">created_by</td><td class="col-type">BIGINT</td><td><span class="badge badge-fk">FK</span></td><td class="col-note">→ users(id) CASCADE</td></tr>
+          <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-note">DEFAULT NOW()</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── Relationships ── -->
+  <h2 class="section-title">Relationships</h2>
+  <div class="rel-table">
+    <table>
+      <thead>
+        <tr>
+          <th>From</th>
+          <th>To</th>
+          <th>Cardinality</th>
+          <th>On Delete</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">users</td>
+          <td class="col-name">articles</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">author_id</td>
+        </tr>
+        <tr>
+          <td class="col-name">users</td>
+          <td class="col-name">comments</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">author_id</td>
+        </tr>
+        <tr>
+          <td class="col-name">users</td>
+          <td class="col-name">reactions</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">user_id</td>
+        </tr>
+        <tr>
+          <td class="col-name">users</td>
+          <td class="col-name">tags</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">tagged_user_id (user being mentioned)</td>
+        </tr>
+        <tr>
+          <td class="col-name">users</td>
+          <td class="col-name">tags</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">created_by (user who wrote the @mention)</td>
+        </tr>
+        <tr>
+          <td class="col-name">articles</td>
+          <td class="col-name">comments</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">article_id</td>
+        </tr>
+        <tr>
+          <td class="col-name">articles</td>
+          <td class="col-name">reactions</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE (via app)</td>
+          <td class="col-note">target_type='ARTICLE', target_id=articles.id</td>
+        </tr>
+        <tr>
+          <td class="col-name">comments</td>
+          <td class="col-name">reactions</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE (via app)</td>
+          <td class="col-note">target_type='COMMENT', target_id=comments.id</td>
+        </tr>
+        <tr>
+          <td class="col-name">comments</td>
+          <td class="col-name">comments</td>
+          <td><span class="cardinality">1 : N</span></td>
+          <td>CASCADE</td>
+          <td class="col-note">parent_comment_id — self-join for threaded replies</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Article Publishing Platform &mdash; PostgreSQL 15 · Spring Boot 3.2 · Angular 17
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    er: { diagramPadding: 20, layoutDirection: 'TB', minEntityWidth: 100, minEntityHeight: 75, entityPadding: 15 },
+    themeVariables: {
+      primaryColor: '#dbeafe',
+      primaryTextColor: '#1e40af',
+      primaryBorderColor: '#93c5fd',
+      lineColor: '#64748b',
+      secondaryColor: '#f8fafc',
+      tertiaryColor: '#f1f5f9',
+    }
+  });
+</script>
+</body>
+</html>
