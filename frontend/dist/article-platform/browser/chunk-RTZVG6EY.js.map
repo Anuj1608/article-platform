@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/core/services/auth-gate.service.ts"],
+  "sourcesContent": ["import { Injectable, signal } from '@angular/core';\n\n/** Controls the global auth-gate modal shown when unauthenticated users try to interact. */\n@Injectable({ providedIn: 'root' })\nexport class AuthGateService {\n  readonly visible = signal(false);\n\n  open(): void {\n    this.visible.set(true);\n  }\n\n  close(): void {\n    this.visible.set(false);\n  }\n}\n"],
+  "mappings": ";;;;;;AAIM,IAAO,kBAAP,MAAO,iBAAe;EAD5B,cAAA;AAEW,SAAA,UAAU,OAAO,KAAK;;EAE/B,OAAI;AACF,SAAK,QAAQ,IAAI,IAAI;EACvB;EAEA,QAAK;AACH,SAAK,QAAQ,IAAI,KAAK;EACxB;;;uBATW,kBAAe;IAAA;EAAA;;4EAAf,kBAAe,SAAf,iBAAe,WAAA,YADF,OAAM,CAAA;EAAA;;",
+  "names": []
+}

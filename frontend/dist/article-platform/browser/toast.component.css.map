@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;988648ec7193fa6e126df278ef0ec834d08a50a28dfedf5f81a296f09279bd5e;/Users/macbookpro/Downloads/angular-framework/article-platform/frontend/src/app/shared/ui/toast/toast.component.ts"],
+  "sourcesContent": ["\n    @keyframes slide-in {\n      from { transform: translateX(120%); opacity: 0; }\n      to   { transform: translateX(0);   opacity: 1; }\n    }\n    .animate-slide-in { animation: slide-in 0.25s ease-out; }\n  "],
+  "mappings": ";AACI,WAAW;AACT;AAAO,eAAW,WAAW;AAAO,aAAS;AAAG;AAChD;AAAO,eAAW,WAAW;AAAM,aAAS;AAAG;AACjD;AACA,CAAC;AAAmB,aAAW,SAAS,MAAM;AAAU;",
+  "names": []
+}
